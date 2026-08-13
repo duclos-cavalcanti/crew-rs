@@ -32,7 +32,17 @@ the app is delivered. If it needs the outside world, it doesn't belong here.
   - **use_cases** — orchestration: compose domain entities and call ports to
     fulfill one intent. Depend only on ports, never on concrete IO.
 
-- **adapters** — concrete implementations of the ports.
+- **adapters** — concrete implementations of the ports. Driver/Secondary
+  adapters implement a port that a use-case needs. Driving/Primary adapters 
+  drive the use-cases themselves, taking an input, calling a use-case, and 
+  presenting the result. A driving adapter is realized by three roles:
+  - **controller** — the input half: translates an incoming event/request into
+    a use-case call. Owns no business rules; it only routes intent inward.
+  - **presenter** — the output half: maps a use-case result into a view-model
+    shaped for one medium. Formatting only (labels, symbols, colors) — never
+    business logic, so a single state can drive many presenters.
+  - **view** — renders the presenter's view-model into concrete output. It only
+    displays what the presenter already prepared; it makes no decisions.
 
 - **frameworks** — the outermost layer: renders sessions a use case returns and
   maps key presses to use-case calls. Ratatui lives *here only*, consumed 
