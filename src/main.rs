@@ -16,10 +16,9 @@ fn main() -> Result<()> {
     let config = Config::parse();
     let repo = FsRegistryRepository::new(config.registry_path());
 
-    if config.statusline {
+    if config.list {
         let sessions = list_sessions(&repo)?;
         for session in &sessions {
-            // Placeholder — the tmux presenter (#12) replaces this println.
             println!("{}", session.agent.name);
         }
         return Ok(());

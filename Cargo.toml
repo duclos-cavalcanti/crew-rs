@@ -6,7 +6,7 @@ description = "Minimal ratatui seed for a Rust port of `crew` — a live TUI ove
 license = "MIT"
 
 [[bin]]
-name = "crew-rs"
+name = "crew"
 path = "src/main.rs"
 
 # Standalone crate — its own workspace root (empty [workspace] table).
