@@ -40,9 +40,49 @@ pub fn tmux(sessions: &[Session]) -> String {
 }
 
 pub fn plain(sessions: &[Session]) -> String {
-    sessions 
-        .iter() 
+    sessions
+        .iter()
         .map(|s| format!("{} {}", glyph(&s.state), s.agent.name))
         .collect::<Vec<_>>()
         .join(" ")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::domain::Agent;
+
+    fn session(name: &str, state: SessionState) -> Session {
+        Session {
+            agent: Agent::new(name, "/path"),
+            state,
+        }
+    }
+
+    #[test]
+    fn tmux_wraps_each_entry_in_color_markup() {
+        let sessions = vec![
+            session("millwright", SessionState::Working),
+            session("prover", SessionState::Dead),
+        ];
+        assert_eq!(
+            tmux(&sessions),
+            "#[fg=green]» millwright#[fg=default] #[fg=brightblack]○ prover#[fg=default]"
+        );
+    }
+
+    #[test]
+    fn plain_is_glyph_and_name_no_color() {
+        let sessions = vec![
+            session("millwright", SessionState::Working),
+            session("prover", SessionState::Idle),
+        ];
+        assert_eq!(plain(&sessions), "» millwright ● prover");
+    }
+
+    #[test]
+    fn empty_input_yields_empty_string() {
+        assert_eq!(tmux(&[]), "");
+        assert_eq!(plain(&[]), "");
+    }
 }
