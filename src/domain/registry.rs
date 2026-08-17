@@ -1,15 +1,14 @@
-use std::vec::Vec;
+use super::agent::Agent;
 
-use super::Session;
-
-pub struct SessionRegistry {
-    pub sessions: Vec<Session>,
+#[derive(Clone)]
+pub struct Registry {
+    pub agents: Vec<Agent>,
 }
 
-impl SessionRegistry {
+impl Registry {
     pub fn new() -> Self {
-        SessionRegistry {
-            sessions: Vec::new()
+        Registry {
+            agents: Vec::new(),
         }
     }
 }
