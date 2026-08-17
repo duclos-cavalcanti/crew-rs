@@ -1,9 +1,10 @@
-use crate::domain::{Agent, Registry};
-use crate::services::RegistryRepository;
-
-use anyhow::Result;
 use std::fs;
 use std::path::PathBuf;
+
+use anyhow::Result;
+
+use crate::domain::{Agent, Registry};
+use crate::services::RegistryRepository;
 
 pub struct FsRegistryRepository {
     path: PathBuf,

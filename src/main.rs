@@ -1,16 +1,16 @@
-use anyhow::Result;
-
-mod domain;
-mod ui;
-mod config;
-mod services;
 mod adapters;
+mod config;
+mod domain;
+mod services;
+mod ui;
 
+use anyhow::Result;
 use clap::Parser;
-use config::Config;
-use ui::TerminalState;
+
 use adapters::FsRegistryRepository;
+use config::Config;
 use services::list_sessions;
+use ui::TerminalState;
 
 fn main() -> Result<()> {
     let config = Config::parse();

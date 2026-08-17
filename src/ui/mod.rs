@@ -1,8 +1,9 @@
-mod term;
 mod input;
+mod term;
 mod view;
 
 use anyhow::Result;
+
 use crate::config::Config;
 
 pub use term::TerminalState;

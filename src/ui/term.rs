@@ -2,14 +2,13 @@ use std::io::stdout;
 use std::time::Duration;
 
 use anyhow::Result;
-
+use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use crossterm::execute;
 use crossterm::terminal::{
     disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
 };
-use crossterm::event::{self, Event, KeyCode, KeyEventKind};
-use ratatui::Terminal;
 use ratatui::backend::CrosstermBackend;
+use ratatui::Terminal;
 
 struct TerminalGuard;
 
