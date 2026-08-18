@@ -78,4 +78,4 @@ cargo run --release
 
 - `~/.tmux.conf` — how crew surfaces today (the `crew` key-table + status line)
 - `~/.config/crew/` — the bash tool being ported (registry, state, signal/render)
-- `~/Work/mady/mady-factory/dashboard/` — the ratatui TUI this is modeled on
+- a private ratatui dashboard project — the TUI architecture this is modeled on
