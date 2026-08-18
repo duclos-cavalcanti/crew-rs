@@ -1,9 +1,9 @@
 use anyhow::Result;
 
 use crate::domain::{Session, SessionState};
-use crate::services::{RegistryRepository, StateStore};
+use crate::services::{RegistryRepository, StateStore, SessionHost};
 
-pub fn list_sessions(repo: &dyn RegistryRepository, store: &dyn StateStore) -> Result<Vec<Session>> {
+pub fn list_sessions(repo: &dyn RegistryRepository, store: &dyn StateStore, host: &dyn SessionHost) -> Result<Vec<Session>> {
     let registry = repo.load()?;
     let sessions = registry
         .agents
@@ -11,7 +11,11 @@ pub fn list_sessions(repo: &dyn RegistryRepository, store: &dyn StateStore) -> R
         .map(|agent| {
             let state = match store.read_state(&agent.name)? {
                 Some(s) => SessionState::from(s.as_str()), 
-                None => SessionState::Unknown
+                None => if host.is_alive(&agent.name) {
+                    SessionState::Live
+                } else {
+                    SessionState::Dead
+                }
             };
             Ok(Session {
                 agent,
@@ -34,26 +38,56 @@ mod tests {
         }
     }
 
-    struct DummyStateStore;
-    impl StateStore for DummyStateStore {
+    struct FixedStore(Option<String>);
+    impl StateStore for FixedStore {
         fn read_state(&self, _name: &str) -> Result<Option<String>> {
-            Ok(None)
+            Ok(self.0.clone())
         }
+    }
+
+    struct DummyHost(bool);
+    impl SessionHost for DummyHost {
+        fn is_alive(&self, _name: &str) -> bool {
+            self.0
+        }
+    }
+
+    fn one_agent() -> DummyRepository {
+        DummyRepository(Registry {
+            agents: vec![Agent::new("millwright", "/a")],
+        })
     }
 
     #[test]
     fn maps_agents_to_sessions() {
-        let reg = Registry {
-            agents: vec![
-                Agent::new("millwright", "/a"),
-                Agent::new("prover", "/b"),
-            ],
-        };
-        let repo = DummyRepository(reg);
+        let repo = DummyRepository(Registry {
+            agents: vec![Agent::new("millwright", "/a"), Agent::new("prover", "/b")],
+        });
 
-        let sessions = list_sessions(&repo, &DummyStateStore).expect("should succeed");
+        let sessions =
+            list_sessions(&repo, &FixedStore(None), &DummyHost(false)).expect("should succeed");
 
         assert_eq!(sessions.len(), 2);
         assert_eq!(sessions[0].agent.name, "millwright");
+    }
+
+    #[test]
+    fn no_state_file_falls_back_to_host_liveness() {
+        let alive = list_sessions(&one_agent(), &FixedStore(None), &DummyHost(true)).unwrap();
+        assert!(matches!(alive[0].state, SessionState::Live));
+
+        let dead = list_sessions(&one_agent(), &FixedStore(None), &DummyHost(false)).unwrap();
+        assert!(matches!(dead[0].state, SessionState::Dead));
+    }
+
+    #[test]
+    fn recorded_state_word_overrides_host() {
+        let sessions = list_sessions(
+            &one_agent(),
+            &FixedStore(Some("working".into())),
+            &DummyHost(false),
+        )
+        .unwrap();
+        assert!(matches!(sessions[0].state, SessionState::Working));
     }
 }

@@ -8,7 +8,7 @@ mod ui;
 use anyhow::Result;
 use clap::Parser;
 
-use adapters::{FsRegistryRepository, FsStateStore};
+use adapters::{FsRegistryRepository, FsStateStore, TmuxHost};
 use config::{Command, Config, Format};
 use services::{list_sessions, RegistryRepository};
 use ui::TerminalState;
@@ -27,7 +27,8 @@ fn main() -> Result<()> {
         Some(Command::Status { format }) => {
             let repo = FsRegistryRepository::new(config.registry_path());
             let store = FsStateStore::new(config.state_path());
-            let sessions = list_sessions(&repo, &store)?;
+            let host = TmuxHost;
+            let sessions = list_sessions(&repo, &store, &host)?;
             let output = match format {
                 Format::Plain => present::plain(&sessions),
                 Format::Tmux => present::tmux(&sessions),
